@@ -20,6 +20,7 @@ class Producto(models.Model):
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
     activo = models.BooleanField(default=True)
     tipo_envio = models.CharField(max_length=20, choices=TIPO_ENVIO)
+    imagen = models.ImageField(upload_to='productos/', blank=True, null=True)
 
     def __str__(self):
         return self.nombre
