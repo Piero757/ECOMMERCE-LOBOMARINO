@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center text-center">
+        <div class="col-md-6">
+            <div class="mb-4">
+                <div class="display-1 text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h2 class="fw-bold mt-2">¡Pedido Confirmado!</h2>
+                <p class="text-muted">Su orden está siendo procesada en este momento.</p>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px; background-color: #f8f9fa;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Orden:</span>
+                        <strong class="text-primary">#{{ pedido.id }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Mesa:</span>
+                        <strong>{{ pedido.mesa.numero }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                        <span class="fw-bold">Tiempo Estimado:</span>
+                        <span class="badge bg-info text-dark">{{ tiempo_estimado }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">Resumen del Pedido</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush text-start">
+                        {% for detalle in pedido.detalles.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                {{ detalle.producto.nombre }}
+                                <br>
+                                <small class="text-muted">Cant: {{ detalle.cantidad }}</small>
+                            </div>
+                            <span>S/ {{ detalle.subtotal }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer bg-light border-0 py-3 d-flex justify-content-between py-3">
+                    <h5 class="mb-0 fw-bold">Total Pagado:</h5>
+                    <h5 class="mb-0 fw-bold text-success">S/ {{ pedido.total }}</h5>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+                <div class="col-6">
+                    <a href="{% url 'panel_cliente' %}" class="btn btn-outline-secondary w-100 py-2 rounded-pill">
+                        ➕ Agregar más
+                    </a>
+                </div>
+                <div class="col-6">
+                    <form action="{% url 'cambiar_estado_pedido' pedido.id 'cuenta' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill">
+                            💲 Pedir Cuenta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

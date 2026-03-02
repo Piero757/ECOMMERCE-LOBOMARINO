@@ -3,15 +3,63 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Menú del Restaurante</h2>
+        <div>
+            <h2>Menú del Restaurante</h2>
+            {% if mesa_numero %}
+            <span class="badge bg-success fs-6">Mesa: {{ mesa_numero }}</span>
+            {% else %}
+            <span class="badge bg-warning text-dark fs-6">Sin mesa asignada (escanea QR)</span>
+            {% endif %}
+        </div>
         <a href="{% url 'ver_carrito' %}" class="btn btn-dark">
-            🛒 Ver mi Carrito
+            🛒 Mi Carrito
         </a>
     </div>
-    <p class="text-muted small">Bienvenido, {{ user.username }} ({{ user.rol }})</p>
 
+    <p class="text-muted small">
+        Bienvenido, {% if user.is_authenticated %}{{ user.username }}{% else %}Invitado{% endif %}
+    </p>
+
+    <!-- Pedidos Recientes -->
+    {% if pedidos_recientes %}
+    <div class="mb-5">
+        <h4>Tu consumo actual</h4>
+        <div class="list-group">
+            {% for pedido in pedidos_recientes %}
+            <a href="{% url 'pedido_confirmado' pedido.id %}"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Orden #{{ pedido.id }}</strong> - {{ pedido.fecha|date:"H:i" }}
+                    <br>
+                    <small class="text-muted">Total acumulado: S/ {{ pedido.total }}</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    {% if pedido.estado == 'entregado' %}
+                    <form action="{% url 'cambiar_estado_pedido' pedido.id 'cuenta' %}" method="post"
+                        class="me-2 d-inline" onclick="event.stopPropagation();">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Pedir Cuenta</button>
+                    </form>
+                    {% endif %}
+                    <span
+                        class="badge {% if pedido.estado == 'pendiente' %}bg-secondary{% elif pedido.estado == 'confirmado' %}bg-info text-dark{% elif pedido.estado == 'pagado' %}bg-success{% elif pedido.estado == 'cuenta' %}bg-danger{% endif %} me-2">
+                        {{ pedido.get_estado_display }}
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Menú por Categorías -->
+    {% for categoria in categorias %}
+    {% if categoria.productos.all %}
+    <h3 class="mt-5 border-bottom pb-2">{{ categoria.nombre }}</h3>
     <div class="row">
-        {% for producto in productos %}
+        {% for producto in categoria.productos.all %}
+        {% if producto.activo %}
         <div class="col-md-4 mb-4">
             <div class="card h-100 shadow-sm">
                 {% if producto.imagen %}
@@ -32,11 +80,14 @@
                 </div>
             </div>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <p class="text-muted">No hay productos disponibles por ahora.</p>
-        </div>
+        {% endif %}
         {% endfor %}
     </div>
+    {% endif %}
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <p class="text-muted">No hay categorías o productos disponibles por ahora.</p>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

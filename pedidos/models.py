@@ -7,12 +7,16 @@ class Pedido(models.Model):
 
     ESTADO_CHOICES = (
         ('pendiente', 'Pendiente'),
-        ('confirmado', 'Confirmado'),
+        ('confirmado', 'Confirmado (Cocina)'),
+        ('preparando', 'En Preparación'),
+        ('listo', 'Listo para Entrega'),
+        ('entregado', 'Entregado'),
+        ('cuenta', 'Cuenta Solicitada'),
         ('pagado', 'Pagado'),
     )
 
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     fecha = models.DateTimeField(auto_now_add=True)
@@ -28,4 +32,6 @@ class DetallePedido(models.Model):
     precio_unitario = models.DecimalField(max_digits=8, decimal_places=2)
 
     def subtotal(self):
-        return self.cantidad * self.precio_unitario
+        if self.cantidad is not None and self.precio_unitario is not None:
+            return self.cantidad * self.precio_unitario
+        return 0

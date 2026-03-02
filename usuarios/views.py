@@ -3,7 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from productos.models import Producto
+from productos.models import Producto, Categoria
+from pedidos.models import Pedido
 
 
 def login_view(request):
@@ -38,26 +39,81 @@ def login_view(request):
     return render(request, "login.html")
 
 
-@login_required
 def panel_cliente(request):
-    if request.user.rol != 'cliente':
-        return HttpResponseForbidden("No tienes permiso.")
-    productos = Producto.objects.filter(activo=True)
-    return render(request, "panel_cliente.html", {"productos": productos})
+    # Ya no bloqueamos por rol aquí, permitimos que cualquiera vea la carta
+    # Especialmente para que el admin pueda probar el flujo QR sin error.
+    
+    categorias = Categoria.objects.filter(activa=True).prefetch_related('productos')
+    mesa_numero = request.session.get('mesa_numero')
+    mesa_id = request.session.get('mesa_id')
+    
+    # Obtener pedidos recientes
+    if request.user.is_authenticated and request.user.rol == 'cliente':
+        pedidos_recientes = Pedido.objects.filter(usuario=request.user).order_by('-fecha')[:5]
+    elif mesa_id:
+        # Para invitados: Solo mostrar consumo ACTIVO (que no esté pagado)
+        # Una vez pagado, la mesa queda "limpia" para el siguiente cliente.
+        pedidos_recientes = Pedido.objects.filter(mesa_id=mesa_id).exclude(estado='pagado').order_by('-fecha')
+    else:
+        pedidos_recientes = []
+    
+    return render(request, "panel_cliente.html", {
+        "categorias": categorias,
+        "mesa_numero": mesa_numero,
+        "pedidos_recientes": pedidos_recientes
+    })
 
 
 @login_required
 def panel_mozo(request):
+    if request.user.rol not in ['mozo', 'admin']:
+        return HttpResponseForbidden("No tienes permiso.")
+    
+    from mesas.models import Mesa
+    mesas = Mesa.objects.filter(activa=True).order_by('numero')
+    
+    # El mozo ve pedidos que no han sido pagados
+    pedidos_activos = Pedido.objects.exclude(estado='pagado').order_by('fecha')
+    
+    return render(request, "panel_mozo.html", {
+        "pedidos": pedidos_activos,
+        "mesas": mesas
+    })
+
+@login_required
+def mozo_atender_mesa(request, mesa_id):
     if request.user.rol != 'mozo':
         return HttpResponseForbidden("No tienes permiso.")
-    return render(request, "panel_mozo.html")
+    
+    from mesas.models import Mesa
+    mesa = get_object_or_404(Mesa, id=mesa_id)
+    request.session['mesa_id'] = mesa.id
+    request.session['mesa_numero'] = mesa.numero
+    
+    messages.success(request, f"Atendiendo Mesa {mesa.numero}")
+    return redirect('panel_cliente')
 
+
+
+from django.db.models import Sum
+from django.utils import timezone
 
 @login_required
 def panel_cajero(request):
-    if request.user.rol != 'cajero':
+    if request.user.rol not in ['cajero', 'admin']:
         return HttpResponseForbidden("No tienes permiso.")
-    return render(request, "panel_cajero.html")
+        
+    # El cajero ve todos los pedidos que no han sido pagados para gestionar cobros
+    pedidos_para_cobro = Pedido.objects.exclude(estado='pagado').order_by('mesa__numero')
+    
+    # Calcular total ventas del día
+    hoy = timezone.now().date()
+    total_dia = Pedido.objects.filter(estado='pagado', fecha__date=hoy).aggregate(Sum('total'))['total__sum'] or 0
+    
+    return render(request, "panel_cajero.html", {
+        "pedidos": pedidos_para_cobro,
+        "total_dia": total_dia
+    })
 
 
 def logout_view(request):
@@ -67,10 +123,9 @@ def logout_view(request):
 
 # --- VISTAS DEL CARRITO EN SESIÓN ---
 
-@login_required
 def agregar_al_carrito(request, producto_id):
-    if request.user.rol != 'cliente':
-        return HttpResponseForbidden("Solo los clientes pueden comprar.")
+    # Permitimos a invitados y a cualquier usuario logueado (incluido admin para pruebas)
+    # que agreguen productos si están en el panel de cliente.
     
     # Obtener el carrito de la sesión o crear uno vacío si no existe
     carrito = request.session.get('carrito', {})
@@ -98,7 +153,6 @@ def agregar_al_carrito(request, producto_id):
     return redirect("panel_cliente")
 
 
-@login_required
 def ver_carrito(request):
     carrito = request.session.get('carrito', {})
     total = sum(item['precio'] * item['cantidad'] for item in carrito.values())
@@ -109,7 +163,6 @@ def ver_carrito(request):
     })
 
 
-@login_required
 def eliminar_del_carrito(request, producto_id):
     carrito = request.session.get('carrito', {})
     id_str = str(producto_id)
@@ -122,7 +175,6 @@ def eliminar_del_carrito(request, producto_id):
     return redirect("ver_carrito")
 
 
-@login_required
 def vaciar_carrito(request):
     request.session['carrito'] = {}
     messages.success(request, "Carrito vaciado.")

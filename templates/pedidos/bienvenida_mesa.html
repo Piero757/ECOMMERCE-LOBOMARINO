@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 overflow-hidden" style="border-radius: 20px;">
+                <!-- Imagen de Bienvenida (puedes cambiarla por una real de Lobo Marino) -->
+                <div
+                    style="height: 300px; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center;">
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <h1 class="display-3 text-white fw-bold">LOBO MARINO</h1>
+                    </div>
+                </div>
+
+                <div class="card-body p-5">
+                    <h2 class="mb-4">¡Bienvenido a la Mesa {{ mesa.numero }}!</h2>
+                    <p class="lead text-muted mb-5">
+                        Disfrute de los mejores ceviches y platos marinos preparados con pasión y frescura.
+                        Estamos aquí para hacer de su visita una experiencia inolvidable.
+                    </p>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <a href="{% url 'panel_cliente' %}"
+                                class="btn btn-outline-dark btn-lg w-100 py-3 shadow-sm rounded-pill">
+                                📖 Ver Carta
+                            </a>
+                        </div>
+                        <div class="col-sm-6">
+                            <a href="{% url 'panel_cliente' %}"
+                                class="btn btn-primary btn-lg w-100 py-3 shadow-sm rounded-pill">
+                                🥣 Hacer Pedido
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

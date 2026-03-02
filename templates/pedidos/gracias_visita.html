@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 p-5"
+                style="border-radius: 20px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+                <div class="mb-4">
+                    <div class="display-1 text-success mb-4 animate__animated animate__heartBeat">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <!-- LETRA GRANDE -->
+                    <h1 class="display-3 fw-bold text-dark mb-4" style="line-height: 1.1;">
+                        En un momento se le hara la entrega de la cuenta
+                    </h1>
+
+                    <div class="py-3">
+                        <hr class="mx-auto w-25 border-primary border-2 opacity-50">
+                    </div>
+
+                    <!-- LETRAS MÁS PEQUEÑAS -->
+                    <p class="text-secondary text-uppercase fw-semibold mb-0"
+                        style="letter-spacing: 0.3rem; font-size: 0.9rem;">
+                        GRACIAS POR SU VISITA
+                    </p>
+                </div>
+
+                <div class="mt-5">
+                    <a href="{% url 'panel_cliente' %}" class="btn btn-outline-dark px-5 py-2 rounded-pill shadow-sm">
+                        <i class="bi bi-arrow-left me-2"></i>Volver al Menú
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-4 text-muted small">
+                LOBO MARINO 🌊 - Cevichería & Restobar
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-widest {
+        letter-spacing: 0.2rem;
+    }
+</style>
+{% endblock %}
