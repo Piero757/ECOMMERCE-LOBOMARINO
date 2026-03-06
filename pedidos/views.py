@@ -1,17 +1,46 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponseForbidden
 from django.utils import timezone
 from .models import Pedido, DetallePedido
 from productos.models import Producto
 from mesas.models import Mesa
 
+
 def atender_mesa(request, slug):
+    """
+    Vista que se usa cuando el cliente escanea el QR de la mesa.
+    Solo guarda la mesa en sesión y redirige al inicio bonito.
+    """
     mesa = get_object_or_404(Mesa, slug=slug, activa=True)
     request.session['mesa_id'] = mesa.id
     request.session['mesa_numero'] = mesa.numero
-    
-    return render(request, 'pedidos/bienvenida_mesa.html', {'mesa': mesa})
+
+    return redirect('inicio_mesa')
+
+
+def inicio_mesa(request):
+    """
+    Vista para el botón 'Inicio' del cliente.
+    Muestra el landing con hero + secciones. Si hay mesa en sesión,
+    la mostramos en un badge; si no, se ve genérico.
+    """
+    mesa = None
+    mesa_id = request.session.get('mesa_id')
+    if mesa_id:
+        mesa = get_object_or_404(Mesa, id=mesa_id, activa=True)
+
+    productos_destacados = Producto.objects.filter(activo=True)[:3]
+
+    return render(
+        request,
+        'pedidos/bienvenida_mesa.html',
+        {
+            'mesa': mesa,
+            'productos_destacados': productos_destacados,
+        },
+    )
 
 from decimal import Decimal
 
@@ -145,21 +174,20 @@ def cambiar_estado_pedido(request, pedido_id, nuevo_estado):
     
     pedido.estado = nuevo_estado
     pedido.save()
-    
+
     messages.success(request, f"Estado del pedido #{pedido.id} actualizado a {nuevo_estado}.")
-    
+
+    # Siempre que se pida la cuenta, mostrar la pantalla de agradecimiento,
+    # sin importar si es cliente, invitado o staff probando el flujo.
+    if nuevo_estado == 'cuenta':
+        return redirect('pedido_cuenta', pedido_id=pedido.id)
+
     if request.user.is_authenticated:
         if request.user.rol == 'mozo':
             return redirect('panel_mozo')
-        elif request.user.rol == 'cajero':
+        elif request.user.rol in ['cajero', 'admin']:
             return redirect('panel_cajero')
-        elif request.user.rol == 'cliente' and nuevo_estado == 'cuenta':
-            return redirect('pedido_cuenta', pedido_id=pedido.id)
         else:
             return redirect('/admin/')
-    
-    # Si es un invitado que pidió la cuenta
-    if nuevo_estado == 'cuenta':
-        return redirect('pedido_cuenta', pedido_id=pedido.id)
-        
+
     return redirect('panel_cliente')

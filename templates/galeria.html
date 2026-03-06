@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="text-center py-4 py-md-5">
+        <h1 class="display-4 fw-bold mb-2">Galería</h1>
+        <p class="text-muted fs-5 mb-0">
+            Conoce nuestro restaurante, platos y el equipo detrás de cada sabor.
+        </p>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+        <button type="button" class="btn chip px-3 py-2 active" data-filter="all">
+            <i class="bi bi-grid-fill me-2"></i>Todo
+        </button>
+        {% for key, label in categorias.items %}
+        <button type="button" class="btn chip px-3 py-2" data-filter="{{ key }}">
+            {{ label }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="row g-3 g-md-4">
+        {% for imagen in imagenes %}
+        <div class="col-6 col-md-4 col-lg-3 galeria-item" data-category="{{ imagen.categoria }}">
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 18px;">
+                <img src="{{ imagen.imagen.url }}" alt="{{ imagen.titulo }}"
+                    style="width: 100%; height: 190px; object-fit: cover;">
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted mb-0">Aún no hay imágenes en la galería.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    (function () {
+        const chips = document.querySelectorAll('[data-filter]');
+        const items = document.querySelectorAll('.galeria-item');
+
+        function setActive(btn) {
+            chips.forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function applyFilter(filter) {
+            items.forEach(el => {
+                const cat = el.getAttribute('data-category');
+                const show = filter === 'all' || cat === filter;
+                el.style.display = show ? '' : 'none';
+            });
+        }
+
+        chips.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filter = btn.getAttribute('data-filter');
+                setActive(btn);
+                applyFilter(filter);
+            });
+        });
+    })();
+</script>
+{% endblock %}
+

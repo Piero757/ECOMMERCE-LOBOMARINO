@@ -1,47 +1,54 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+from .models import GalleryImage, ContactInfo, ContactMessage
 
 
-def login_view(request):
+def galeria_view(request):
+    imagenes = GalleryImage.objects.filter(activo=True)
+    categorias = dict(GalleryImage.CATEGORIA_CHOICES)
+
+    return render(
+        request,
+        "galeria.html",
+        {
+            "imagenes": imagenes,
+            "categorias": categorias,
+        },
+    )
+
+
+def contacto_view(request):
+    info = ContactInfo.objects.filter(activo=True).first()
+
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        nombre = request.POST.get("nombre", "").strip()
+        correo = request.POST.get("correo", "").strip()
+        telefono = request.POST.get("telefono", "").strip()
+        mensaje = request.POST.get("mensaje", "").strip()
 
-        user = authenticate(request, username=username, password=password)
+        if not nombre or not correo or not mensaje:
+            messages.error(
+                request,
+                "Por favor completa al menos tu nombre, correo y mensaje.",
+            )
+        else:
+            ContactMessage.objects.create(
+                nombre=nombre,
+                correo=correo,
+                telefono=telefono,
+                mensaje=mensaje,
+            )
+            messages.success(
+                request,
+                "Tu mensaje ha sido enviado. Nos pondremos en contacto contigo.",
+            )
+            return redirect("contacto")
 
-        if user is not None:
-            login(request, user)
-
-            # 🔥 REDIRECCIÓN POR ROL
-            if user.rol == "admin":
-                return redirect("panel_admin")
-            elif user.rol == "mozo":
-                return redirect("panel_mozo")
-            elif user.rol == "cajero":
-                return redirect("panel_cajero")
-            else:
-                return redirect("panel_cliente")
-
-    return render(request, "login.html")
-
-
-def logout_view(request):
-    logout(request)
-    return redirect("login")
-
-@login_required
-def panel_admin(request):
-    return render(request, "panel_admin.html")
-
-@login_required
-def panel_mozo(request):
-    return render(request, "panel_mozo.html")
-
-@login_required
-def panel_cajero(request):
-    return render(request, "panel_cajero.html")
-
-@login_required
-def panel_cliente(request):
-    return render(request, "panel_cliente.html")
+    return render(
+        request,
+        "contacto.html",
+        {
+            "info": info,
+        },
+    )

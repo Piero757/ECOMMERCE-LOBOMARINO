@@ -3,27 +3,32 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Panel de Caja - Gestión de Cobros</h2>
-        <span class="badge bg-dark">Cajero: {{ user.username }}</span>
+        <div>
+            <h2 class="mb-1">Panel de Caja</h2>
+            <p class="text-muted mb-0">Gestión de cobros y cierre de cuentas</p>
+        </div>
+        <span class="badge bg-dark fs-6">
+            <i class="bi bi-person-badge me-1"></i>Cajero: {{ user.username }}
+        </span>
     </div>
 
-    <div class="row">
-        <!-- Resumen de Ventas -->
-        <div class="col-md-4 mb-4">
-            <div class="card bg-success text-white shadow-sm">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="card-title">Ventas del Día</h5>
-                    <h2 class="display-6">S/ {{ total_dia|default:"0.00" }}</h2>
-                    <p class="card-text">Total acumulado hoy</p>
+                    <h5 class="card-title mb-2"><i class="bi bi-cash-stack me-2"></i>Ventas del día</h5>
+                    <h2 class="display-6 mb-1">S/ {{ total_dia|default:"0.00" }}</h2>
+                    <p class="card-text mb-0 small">Total de pedidos marcados como pagados hoy.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <h4>Pedidos Activos por Mesa</h4>
+    <h4><i class="bi bi-receipt-cutoff me-2"></i>Pedidos activos por mesa</h4>
+
     {% if pedidos %}
     <div class="table-responsive mt-3">
-        <table class="table table-hover align-middle shadow-sm">
+        <table class="table table-hover align-middle shadow-sm bg-white">
             <thead class="table-dark">
                 <tr>
                     <th>Mesa</th>
@@ -31,28 +36,38 @@
                     <th>Cliente</th>
                     <th>Estado</th>
                     <th>Total</th>
-                    <th>Acción</th>
+                    <th class="text-center">Acción</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pedido in pedidos %}
                 <tr>
                     <td><strong>Mesa {{ pedido.mesa.numero }}</strong></td>
-                    <td>{{ pedido.id }}</td>
-                    <td>{{ pedido.usuario.username }}</td>
+                    <td>#{{ pedido.id }}</td>
+                    <td>
+                        {% if pedido.usuario %}
+                        {{ pedido.usuario.username }}
+                        {% else %}
+                        <span class="text-muted">Invitado</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <span
-                            class="badge {% if pedido.estado == 'pendiente' %}bg-secondary{% elif pedido.estado == 'confirmado' %}bg-info{% elif pedido.estado == 'listo' %}bg-primary{% endif %} text-uppercase">
+                            class="badge {% if pedido.estado == 'pendiente' %}bg-secondary{% elif pedido.estado == 'confirmado' %}bg-info text-dark{% elif pedido.estado == 'listo' %}bg-primary{% elif pedido.estado == 'cuenta' %}bg-warning text-dark{% endif %} text-uppercase">
                             {{ pedido.get_estado_display }}
                         </span>
                     </td>
                     <td><strong>S/ {{ pedido.total }}</strong></td>
-                    <td>
+                    <td class="text-center">
                         {% if pedido.estado != 'pagado' %}
-                        <form action="{% url 'cambiar_estado_pedido' pedido.id 'pagado' %}" method="post">
+                        <form action="{% url 'cambiar_estado_pedido' pedido.id 'pagado' %}" method="post" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-outline-success btn-sm">Marcar como Pagado</button>
+                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                Marcar como pagado
+                            </button>
                         </form>
+                        {% else %}
+                        <span class="badge bg-success">Pagado</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -62,7 +77,8 @@
     </div>
     {% else %}
     <div class="alert alert-secondary text-center py-4 mt-3">
-        No hay pedidos activos para cobrar.
+        <h5 class="mb-1">No hay pedidos activos para cobrar.</h5>
+        <p class="mb-0 text-muted">Cuando los mozos soliciten la cuenta aparecerán aquí.</p>
     </div>
     {% endif %}
 </div>

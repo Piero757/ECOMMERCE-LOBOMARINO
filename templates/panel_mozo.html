@@ -34,22 +34,27 @@
     <hr class="my-5">
 
     <h4><i class="bi bi-receipt me-2"></i>Pedidos Activos en Sala</h4>
+
+    {% if pedidos %}
     <div class="row">
         {% for pedido in pedidos %}
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm border-{% if pedido.estado == 'pendiente' %}warning{% else %}info{% endif %}">
-                <div class="card-header d-flex justify-content-between">
-                    <strong>Mesa {{ pedido.mesa.numero }} - Pedido #{{ pedido.id }}</strong>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Mesa {{ pedido.mesa.numero }}</strong>
+                        <span class="text-muted ms-2">#{{ pedido.id }}</span>
+                    </div>
                     <span
                         class="badge {% if pedido.estado == 'pendiente' %}bg-warning text-dark{% else %}bg-info{% endif %} text-uppercase">
                         {{ pedido.get_estado_display }}
                     </span>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush small">
                         {% for detalle in pedido.detalles.all %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            {{ detalle.producto.nombre }} x {{ detalle.cantidad }}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ detalle.producto.nombre }} x {{ detalle.cantidad }}</span>
                             <span class="badge bg-light text-dark">S/ {{ detalle.subtotal }}</span>
                         </li>
                         {% endfor %}
@@ -61,22 +66,30 @@
                             {% if pedido.estado == 'pendiente' %}
                             <form action="{% url 'cambiar_estado_pedido' pedido.id 'confirmado' %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-primary btn-sm">Confirmar (Cocina)</button>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    Confirmar (Cocina)
+                                </button>
                             </form>
                             {% elif pedido.estado == 'confirmado' %}
                             <form action="{% url 'cambiar_estado_pedido' pedido.id 'preparando' %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-secondary btn-sm">En Preparación</button>
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    En preparación
+                                </button>
                             </form>
                             {% elif pedido.estado == 'preparando' %}
                             <form action="{% url 'cambiar_estado_pedido' pedido.id 'listo' %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-info btn-sm">¡Listo!</button>
+                                <button type="submit" class="btn btn-info btn-sm">
+                                    ¡Listo para entregar!
+                                </button>
                             </form>
                             {% elif pedido.estado == 'listo' %}
                             <form action="{% url 'cambiar_estado_pedido' pedido.id 'entregado' %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-sm">Marcar Entregado</button>
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    Marcar entregado
+                                </button>
                             </form>
                             {% endif %}
                         </div>
@@ -88,7 +101,8 @@
     </div>
     {% else %}
     <div class="alert alert-info text-center py-5">
-        <h4>No hay pedidos activos en este momento.</h4>
+        <h4 class="mb-1">No hay pedidos activos en este momento.</h4>
+        <p class="mb-0 text-muted">Cuando ingresen nuevos pedidos aparecerán aquí para gestionarlos.</p>
     </div>
     {% endif %}
 </div>

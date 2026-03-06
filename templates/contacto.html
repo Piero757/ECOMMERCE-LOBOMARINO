@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <div class="text-center py-4 py-md-5">
+        <h1 class="display-4 fw-bold mb-2">Contáctanos</h1>
+        <p class="text-muted fs-5 mb-0">
+            ¿Tienes alguna pregunta o sugerencia? Estamos aquí para ayudarte.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="card menu-card h-100">
+                <div class="card-body p-4 p-md-5">
+                    <h4 class="fw-bold mb-4">Información de Contacto</h4>
+
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-4 d-flex">
+                            <div class="me-3">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 40px; height: 40px; background: rgba(14,165,164,.1); color:#0f766e;">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Dirección</div>
+                                <div class="text-muted small">
+                                    {{ info.direccion|default:"Av. Tingo, Arequipa, Perú" }}
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="mb-4 d-flex">
+                            <div class="me-3">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 40px; height: 40px; background: rgba(14,165,164,.1); color:#0f766e;">
+                                    <i class="bi bi-telephone-fill"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Teléfono</div>
+                                <div class="text-muted small">
+                                    {{ info.telefono|default:"+51 983868403" }}
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="mb-4 d-flex">
+                            <div class="me-3">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 40px; height: 40px; background: rgba(14,165,164,.1); color:#0f766e;">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Email</div>
+                                <div class="text-muted small">
+                                    {{ info.email|default:"pierof797@gmail.com" }}
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="d-flex">
+                            <div class="me-3">
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                                    style="width: 40px; height: 40px; background: rgba(14,165,164,.1); color:#0f766e;">
+                                    <i class="bi bi-clock-fill"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">Horario</div>
+                                <div class="text-muted small">
+                                    {{ info.horario|default:"Lunes a Domingo: 9:00 AM - 17:30 PM" }}
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card menu-card h-100">
+                <div class="card-body p-4 p-md-5">
+                    <h4 class="fw-bold mb-4">Envíanos un Mensaje</h4>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Nombre Completo</label>
+                                <input type="text" name="nombre" class="form-control"
+                                    placeholder="Tu nombre" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Correo Electrónico</label>
+                                <input type="email" name="correo" class="form-control"
+                                    placeholder="tu@email.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control"
+                                    placeholder="+51 999 999 999">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Mensaje</label>
+                                <textarea name="mensaje" rows="4" class="form-control"
+                                    placeholder="Escribe tu mensaje aquí..." required></textarea>
+                                <div class="form-text small">Máximo 500 caracteres.</div>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-brand w-100 py-2">
+                                    Enviar Mensaje
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if info and info.mapa_embed %}
+    <div class="card menu-card mb-5">
+        <div class="card-body p-0">
+            {{ info.mapa_embed|safe }}
+        </div>
+    </div>
+    {% else %}
+    <div class="card menu-card mb-5">
+        <div class="card-body p-3 p-md-4">
+            <div class="text-muted small text-center">
+                Puedes agregar un mapa de Google Maps desde el panel de administración
+                editando la <strong>Información de contacto</strong>.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

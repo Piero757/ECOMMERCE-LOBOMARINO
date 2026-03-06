@@ -1,93 +1,232 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2>Menú del Restaurante</h2>
-            {% if mesa_numero %}
-            <span class="badge bg-success fs-6">Mesa: {{ mesa_numero }}</span>
-            {% else %}
-            <span class="badge bg-warning text-dark fs-6">Sin mesa asignada (escanea QR)</span>
-            {% endif %}
-        </div>
-        <a href="{% url 'ver_carrito' %}" class="btn btn-dark">
-            🛒 Mi Carrito
-        </a>
+<style>
+    .floating-cart-btn {
+        position: fixed;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        z-index: 1050;
+        background: var(--brand-2);
+        color: #fff;
+        padding: 0.65rem 1.4rem;
+        border-radius: 999px;
+        font-weight: 600;
+        box-shadow: 0 14px 35px rgba(15, 23, 42, .25);
+        text-decoration: none;
+    }
+
+    .floating-cart-btn:hover {
+        color: #fff;
+        background: #0b5f59;
+        text-decoration: none;
+    }
+
+    .floating-cart-badge {
+        position: absolute;
+        top: -0.35rem;
+        right: -0.35rem;
+        background: #fbbf24;
+        color: #111827;
+        border-radius: 999px;
+        padding: 0.05rem 0.45rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    @media (max-width: 576px) {
+        .floating-cart-btn {
+            right: 1rem;
+            bottom: 1rem;
+            padding-inline: 1.1rem;
+        }
+    }
+</style>
+
+<div id="inicio" class="container mt-3">
+    <div class="text-center py-4 py-md-5">
+        <h1 class="display-4 fw-bold mb-2">Nuestra Carta</h1>
+        <p class="text-muted fs-5 mb-0">Descubre los auténticos sabores del mar peruano</p>
     </div>
 
-    <p class="text-muted small">
-        Bienvenido, {% if user.is_authenticated %}{{ user.username }}{% else %}Invitado{% endif %}
-    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4" id="carta">
+        <button type="button" class="btn chip px-3 py-2 active" data-filter="all">
+            <i class="bi bi-grid-fill me-2"></i>Todo
+        </button>
+        {% for categoria in categorias %}
+        <button type="button" class="btn chip px-3 py-2" data-filter="cat-{{ categoria.id }}">
+            {{ categoria.nombre }}
+        </button>
+        {% endfor %}
+    </div>
 
-    <!-- Pedidos Recientes -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-2 mb-4">
+        <div class="text-center text-md-start">
+            {% if mesa_numero %}
+            <span class="badge bg-success fs-6">
+                <i class="bi bi-geo-alt-fill me-1"></i>Mesa {{ mesa_numero }}
+            </span>
+            {% else %}
+            <span class="badge bg-warning text-dark fs-6">
+                <i class="bi bi-qr-code-scan me-1"></i>Escanea el QR de tu mesa
+            </span>
+            {% endif %}
+            <div class="text-muted small mt-2">
+                {% if user.is_authenticated %}
+                Hola, <strong>{{ user.username }}</strong>. Elige tus platos y agrégalos al pedido.
+                {% else %}
+                Estás como <strong>invitado</strong>. Elige tus platos y agrégalos al pedido.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     {% if pedidos_recientes %}
-    <div class="mb-5">
-        <h4>Tu consumo actual</h4>
-        <div class="list-group">
-            {% for pedido in pedidos_recientes %}
-            <a href="{% url 'pedido_confirmado' pedido.id %}"
-                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>Orden #{{ pedido.id }}</strong> - {{ pedido.fecha|date:"H:i" }}
-                    <br>
-                    <small class="text-muted">Total acumulado: S/ {{ pedido.total }}</small>
-                </div>
-                <div class="d-flex align-items-center">
-                    {% if pedido.estado == 'entregado' %}
-                    <form action="{% url 'cambiar_estado_pedido' pedido.id 'cuenta' %}" method="post"
-                        class="me-2 d-inline" onclick="event.stopPropagation();">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-primary btn-sm">Pedir Cuenta</button>
-                    </form>
-                    {% endif %}
-                    <span
-                        class="badge {% if pedido.estado == 'pendiente' %}bg-secondary{% elif pedido.estado == 'confirmado' %}bg-info text-dark{% elif pedido.estado == 'pagado' %}bg-success{% elif pedido.estado == 'cuenta' %}bg-danger{% endif %} me-2">
-                        {{ pedido.get_estado_display }}
-                    </span>
-                    <i class="bi bi-chevron-right text-muted"></i>
-                </div>
-            </a>
-            {% endfor %}
+    <div class="card menu-card mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-receipt me-2"></i>Tu consumo actual
+                </h5>
+                <span class="text-muted small">Últimos pedidos activos</span>
+            </div>
+
+            <div class="list-group">
+                {% for pedido in pedidos_recientes %}
+                <a href="{% url 'pedido_confirmado' pedido.id %}"
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">Orden #{{ pedido.id }}</div>
+                        <div class="small text-muted">
+                            {{ pedido.fecha|date:"d/m H:i" }} · Total acumulado: S/ {{ pedido.total }}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        {% if pedido.estado == 'entregado' %}
+                        <form action="{% url 'cambiar_estado_pedido' pedido.id 'cuenta' %}" method="post"
+                            class="me-2 d-inline" onclick="event.stopPropagation();">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill">
+                                Pedir cuenta
+                            </button>
+                        </form>
+                        {% endif %}
+                        <span
+                            class="badge {% if pedido.estado == 'pendiente' %}bg-secondary{% elif pedido.estado == 'confirmado' %}bg-info text-dark{% elif pedido.estado == 'pagado' %}bg-success{% elif pedido.estado == 'cuenta' %}bg-danger{% endif %} me-2">
+                            {{ pedido.get_estado_display }}
+                        </span>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- Menú por Categorías -->
-    {% for categoria in categorias %}
-    {% if categoria.productos.all %}
-    <h3 class="mt-5 border-bottom pb-2">{{ categoria.nombre }}</h3>
-    <div class="row">
+    <div class="row g-4" id="menuGrid">
+        {% for categoria in categorias %}
         {% for producto in categoria.productos.all %}
         {% if producto.activo %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm">
+        <div class="col-md-4 menu-item" data-category="cat-{{ categoria.id }}">
+            <div class="card menu-card h-100">
                 {% if producto.imagen %}
-                <img src="{{ producto.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}"
-                    style="height: 200px; object-fit: cover;">
+                <img src="{{ producto.imagen.url }}" class="menu-img w-100" alt="{{ producto.nombre }}">
                 {% else %}
-                <div class="bg-light text-center py-5 card-img-top" style="height: 200px;">
+                <div class="menu-img w-100 d-flex align-items-center justify-content-center bg-light">
                     <span class="text-muted">Sin imagen</span>
                 </div>
                 {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ producto.nombre }}</h5>
-                    <p class="card-text text-secondary small">{{ producto.descripcion }}</p>
-                    <p class="card-text"><strong>S/ {{ producto.precio }}</strong></p>
-                    <a href="{% url 'agregar_al_carrito' producto.id %}" class="btn btn-primary w-100">
-                        Agregar al carrito
-                    </a>
+
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="card-title fw-bold mb-2">{{ producto.nombre }}</h5>
+                    <p class="card-text text-muted small mb-3" style="min-height: 44px;">
+                        {{ producto.descripcion }}
+                    </p>
+
+                    <div class="d-flex align-items-center justify-content-between text-muted small mb-3">
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-clock"></i>
+                            {% if producto.tipo_envio == 'barra' %}15 min{% else %}20 min{% endif %}
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                            {% if producto.tipo_envio == 'barra' %}Bebidas{% else %}Cocina{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="mt-auto d-flex align-items-center justify-content-between gap-2">
+                        <div class="price fs-4">S/ {{ producto.precio }}</div>
+                        <a href="{% url 'agregar_al_carrito' producto.id %}"
+                            class="btn btn-brand rounded-pill px-3">
+                            <i class="bi bi-plus-lg me-2"></i>Agregar al Pedido
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
         {% endif %}
         {% endfor %}
+        {% endfor %}
+
+        {% if not categorias %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No hay categorías o productos disponibles por ahora.</p>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-    {% empty %}
-    <div class="col-12 text-center py-5">
-        <p class="text-muted">No hay categorías o productos disponibles por ahora.</p>
+
+    <!-- Botón flotante Ver Pedido -->
+    <a href="{% url 'ver_carrito' %}" class="floating-cart-btn d-inline-flex align-items-center">
+        <i class="bi bi-cart3 me-2"></i>
+        <span>Ver Pedido</span>
+        {% if carrito_count > 0 %}
+        <span class="floating-cart-badge">
+            {{ carrito_count }}
+        </span>
+        {% endif %}
+    </a>
+
+    
+
+    <div id="contacto" class="mt-4 mb-5">
+        <div class="card menu-card">
+            <div class="card-body p-4 p-md-5 text-center">
+                <h3 class="fw-bold mb-2">Ayuda</h3>
+                <p class="text-muted mb-0">
+                    ¿Necesitas ayuda? Llama a un mozo o comunícate con caja.
+                </p>
+            </div>
+        </div>
     </div>
-    {% endfor %}
 </div>
+
+<script>
+    (function () {
+        const chips = document.querySelectorAll('[data-filter]');
+        const items = document.querySelectorAll('.menu-item');
+
+        function setActive(btn) {
+            chips.forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function applyFilter(filter) {
+            items.forEach(el => {
+                const cat = el.getAttribute('data-category');
+                const show = filter === 'all' || cat === filter;
+                el.style.display = show ? '' : 'none';
+            });
+        }
+
+        chips.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filter = btn.getAttribute('data-filter');
+                setActive(btn);
+                applyFilter(filter);
+                const carta = document.getElementById('carta');
+                if (carta) carta.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    })();
+</script>
 {% endblock %}

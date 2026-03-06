@@ -1,6 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Panel Administrador</h2>
-<p>Bienvenido {{ user.username }}</p>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Panel de Administración</h2>
+            <p class="text-muted mb-0">Bienvenido, {{ user.username }} ({{ user.rol|upper }})</p>
+        </div>
+        <a href="/admin/" class="btn btn-dark">
+            <i class="bi bi-gear-fill me-2"></i>Ir al Admin de Django
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Usuarios y Roles</h5>
+                    <p class="card-text text-muted small">
+                        Gestiona los usuarios del sistema y sus permisos.
+                    </p>
+                    <a href="/admin/usuarios/usuario/" class="btn btn-outline-primary btn-sm">
+                        Ver usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-journal-text me-2"></i>Carta y Productos</h5>
+                    <p class="card-text text-muted small">
+                        Añade o edita categorías, platos y bebidas del menú.
+                    </p>
+                    <a href="/admin/productos/categoria/" class="btn btn-outline-success btn-sm me-2">
+                        Categorías
+                    </a>
+                    <a href="/admin/productos/producto/" class="btn btn-outline-success btn-sm">
+                        Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-grid-3x3-gap-fill me-2"></i>Mesas y QR</h5>
+                    <p class="card-text text-muted small">
+                        Configura las mesas del salón y sus códigos QR.
+                    </p>
+                    <a href="/admin/mesas/mesa/" class="btn btn-outline-warning btn-sm">
+                        Gestionar mesas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

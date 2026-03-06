@@ -1,42 +1,127 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container text-center mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0 overflow-hidden" style="border-radius: 20px;">
-                <!-- Imagen de Bienvenida (puedes cambiarla por una real de Lobo Marino) -->
-                <div
-                    style="height: 300px; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1551218808-94e220e084d2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center;">
-                    <div class="d-flex align-items-center justify-content-center h-100">
-                        <h1 class="display-3 text-white fw-bold">LOBO MARINO</h1>
-                    </div>
+<div class="container-fluid px-0">
+    <!-- Hero principal -->
+    <section class="position-relative" style="min-height: 70vh;">
+        <div
+            style="
+                min-height: 70vh;
+                background:
+                    linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+                    url('https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1600&q=80')
+                    center center / cover no-repeat;
+            ">
+            <div class="container h-100 d-flex flex-column justify-content-center align-items-start">
+                {% if mesa_numero %}
+                <span class="badge bg-success mb-3 px-3 py-2 fs-6">
+                    <i class="bi bi-geo-alt-fill me-1"></i> Mesa {{ mesa_numero }}
+                </span>
+                {% endif %}
+
+                <h1 class="display-3 fw-bold text-white mb-3">
+                    Orgullo Norteño
+                </h1>
+                <p class="lead text-white-50 mb-4">
+                    Sabores auténticos del mar peruano.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'panel_cliente' %}#carta" class="btn btn-light btn-lg px-4 rounded-pill">
+                        Ver Carta
+                    </a>
+                    <a href="{% url 'panel_cliente' %}#carta" class="btn btn-brand btn-lg px-4 rounded-pill">
+                        Hacer Pedido
+                    </a>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="card-body p-5">
-                    <h2 class="mb-4">¡Bienvenido a la Mesa {{ mesa.numero }}!</h2>
-                    <p class="lead text-muted mb-5">
-                        Disfrute de los mejores ceviches y platos marinos preparados con pasión y frescura.
-                        Estamos aquí para hacer de su visita una experiencia inolvidable.
-                    </p>
+    <!-- Platos destacados -->
+    <section class="container py-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Platos Destacados</h2>
+            <p class="text-muted">
+                Preparados con los ingredientes más frescos del mar peruano.
+            </p>
+        </div>
 
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <a href="{% url 'panel_cliente' %}"
-                                class="btn btn-outline-dark btn-lg w-100 py-3 shadow-sm rounded-pill">
-                                📖 Ver Carta
-                            </a>
-                        </div>
-                        <div class="col-sm-6">
-                            <a href="{% url 'panel_cliente' %}"
-                                class="btn btn-primary btn-lg w-100 py-3 shadow-sm rounded-pill">
-                                🥣 Hacer Pedido
+        <div class="row g-4">
+            {% if productos_destacados %}
+            {% for producto in productos_destacados %}
+            <div class="col-md-4">
+                <div class="card menu-card h-100">
+                    {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="w-100"
+                        style="height: 210px; object-fit: cover;">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center bg-light"
+                        style="height: 210px; object-fit: cover;">
+                        <span class="text-muted">Sin imagen</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold">{{ producto.nombre }}</h5>
+                        <p class="card-text text-muted small flex-grow-1">
+                            {{ producto.descripcion|truncatechars:130 }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="price fs-5">S/ {{ producto.precio }}</span>
+                            <a href="{% url 'panel_cliente' %}#carta" class="btn btn-outline-secondary btn-sm">
+                                Ver más
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-12 text-center text-muted">
+                Pronto destacaremos nuestros platos más pedidos aquí.
+            </div>
+            {% endif %}
         </div>
-    </div>
+    </section>
+
+    <!-- Tradición y Sabor -->
+    <section class="py-5" style="background: linear-gradient(135deg, #ecfdf5, #f9fafb);">
+        <div class="container">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-6">
+                    <h2 class="fw-bold mb-3">Tradición y Sabor</h2>
+                    <p class="text-muted mb-3">
+                        En Orgullo Norteño, nos enorgullecemos de ofrecer los mejores ceviches
+                        y platos marinos de la costa peruana. Cada plato es preparado con
+                        ingredientes frescos y recetas tradicionales que han pasado de generación en generación.
+                    </p>
+                    <p class="text-muted mb-4">
+                        Nuestro compromiso es brindarte una experiencia gastronómica única,
+                        donde cada bocado te transporta a las playas del norte del Perú.
+                    </p>
+                    <a href="{% url 'contacto' %}" class="btn btn-brand rounded-pill px-4">
+                        Contáctanos
+                    </a>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80"
+                        alt="Chef preparando un ceviche" class="img-fluid rounded-4 shadow">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA final -->
+    <section class="py-5" style="background: #0ea5a4;">
+        <div class="container text-center text-white">
+            <h2 class="fw-bold mb-3">¿Listo para disfrutar?</h2>
+            <p class="mb-4">
+                Escanea el código QR de tu mesa o explora nuestra carta completa y realiza tu pedido ahora.
+            </p>
+            <a href="{% url 'panel_cliente' %}#carta" class="btn btn-light rounded-pill px-4">
+                Ver Carta Completa
+            </a>
+        </div>
+    </section>
 </div>
 {% endblock %}
