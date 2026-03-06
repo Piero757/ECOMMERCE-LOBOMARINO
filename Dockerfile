@@ -14,9 +14,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+# (collectstatic movido al CMD)
 
 EXPOSE 8000
 
 # Run with Gunicorn (Railway provides $PORT env var)
-CMD gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+CMD python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
