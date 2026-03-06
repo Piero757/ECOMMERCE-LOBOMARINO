@@ -4,3 +4,4 @@ psycopg2-binary
 cloudinary
 qrcode
 Pillow
+dj-database-url
